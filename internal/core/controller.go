@@ -153,13 +153,30 @@ func (c *Controller) work(ctx context.Context, presetID string) {
 			c.send("log", exe+" не запустился: "+err.Error())
 			continue
 		}
-		_, ok := WaitReachable(ctx, wait)
-		if !ok {
-			r.Stop()
-			if ctx.Err() != nil {
-				return // юзер сам нажал «выключить» - выходим тихо
+
+		// Ждём одновременно три исхода: Discord открылся, юзер отменил,
+		// движок умер сразу после старта (обычно это значит, что
+		// приложение запущено без прав администратора).
+		reach := make(chan bool, 1)
+		go func() {
+			_, ok := WaitReachable(ctx, wait)
+			reach <- ok
+		}()
+		select {
+		case ok := <-reach:
+			if !ok {
+				r.Stop()
+				if ctx.Err() != nil {
+					return // юзер сам нажал «выключить» - выходим тихо
+				}
+				c.send("log", "за "+wait.Round(time.Second).String()+" не пробилась, идём дальше")
+				continue
 			}
-			c.send("log", "за "+wait.Round(time.Second).String()+" не пробилась, идём дальше")
+		case <-ctx.Done():
+			r.Stop()
+			return
+		case <-r.Done():
+			c.send("log", "движок выключился сразу после старта. Частая причина - приложение запущено без прав администратора")
 			continue
 		}
 		// успех: движок уже бежит, оставляем его жить

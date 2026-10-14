@@ -15,7 +15,7 @@ import (
 	"github.com/hilsetapp/discord-fix/internal/gui"
 )
 
-var version = "0.1.0"
+var version = "dev"
 
 func locateRoot() string {
 	// Обычный случай: папки cores и lists лежат рядом с exe.
