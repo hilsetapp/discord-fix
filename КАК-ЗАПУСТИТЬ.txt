@@ -3,6 +3,12 @@
 
 1. Распакуй этот архив в любую удобную папку.
 
+   Распаковывай стандартно: правой кнопкой по архиву - «Извлечь всё...»
+   (либо 7-Zip/WinRAR). Некоторые «умные» распаковщики молча пропускают
+   файлы драйвера (.dll и .sys) - без них программа не оживёт.
+   В папке cores должно быть две подпапки zapret и gdpi, в каждой - exe,
+   WinDivert.dll и WinDivert64.sys.
+
    (Качается он вот отсюда:
    https://github.com/hilsetapp/discord-fix/releases/latest/download/discord-fix-windows.zip
    Если у тебя вместо exe внутри папки cmd и internal - ты скачал

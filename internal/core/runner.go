@@ -22,6 +22,20 @@ type Runner struct {
 	Lines   chan string   // хвост логов для показа в приложении
 }
 
+// describeExit переводит код выхода движка на человеческий.
+func describeExit(code int) string {
+	switch uint32(code) {
+	case 0xC0000135:
+		return "Windows не нашла DLL, которая нужна движку (обычно WinDivert.dll не доехала при распаковке). Распакуй архив заново целиком: правая кнопка по zip - «Извлечь всё»"
+	case 0xC0000142:
+		return "движок не смог инициализироваться - попробуй перезагрузить компьютер"
+	}
+	if code == 5 {
+		return "доступ запрещён - нет прав администратора"
+	}
+	return fmt.Sprintf("код %d", code)
+}
+
 // Start поднимает движок. Уже запущенный сначала глушим.
 func (r *Runner) Start(exe string, args []string) error {
 	r.Stop()
@@ -83,7 +97,7 @@ func (r *Runner) Start(exe string, args []string) error {
 				text = exe + " завершился сам по себе (код 0)"
 			default:
 				if ee, ok := err.(*exec.ExitError); ok {
-					text = fmt.Sprintf("%s завершился с ошибкой, код %d", exe, ee.ExitCode())
+					text = exe + " завершился с ошибкой: " + describeExit(ee.ExitCode())
 				} else {
 					text = exe + " завершился: " + err.Error()
 				}
