@@ -1,0 +1,14 @@
+# сборочный мусор
+/dist/
+/discord-fix.exe
+/out/
+*.zip
+*.log
+
+# никогда не коммитим токены
+.token*
+device.json
+
+# редакторы
+.vscode/
+.idea/

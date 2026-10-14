@@ -1,0 +1,17 @@
+discord.gg
+discord.com
+discord.co
+discord.media
+discordapp.com
+discordapp.net
+discordcdn.com
+discord.status
+gateway.discord.gg
+images-ext-1.discordapp.net
+images-ext-2.discordapp.net
+media.discordapp.net
+media.discordcdn.net
+cdn.discordapp.com
+try.discord.co
+updates.discord.com
+developers.google.com

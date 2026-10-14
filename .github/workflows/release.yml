@@ -1,0 +1,63 @@
+name: Релиз
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Юнит-тесты
+        run: go test ./...
+
+      - name: Сборка exe
+        run: go build -ldflags "-H=windowsgui -s -w -X main.version=${GITHUB_REF_NAME#v}" -o discord-fix.exe ./cmd/discord-fix
+
+      - name: Самопроверка
+        run: ./discord-fix.exe -selftest
+
+      - name: Собрать архив для людей
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path stage/discord-fix | Out-Null
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item discord-fix.exe stage/discord-fix/
+          Copy-Item -Recurse cores, lists, scripts, licenses stage/discord-fix/
+          Copy-Item КАК-ЗАПУСТИТЬ.txt stage/discord-fix/
+          Compress-Archive -Path stage/discord-fix -DestinationPath dist/discord-fix-windows.zip
+          (Get-FileHash dist/discord-fix-windows.zip -Algorithm SHA256).Hash.ToLower() | Out-File -Encoding ascii dist/discord-fix-windows.zip.sha256
+
+      - name: Заметки к релизу
+        shell: pwsh
+        run: |
+          @'
+          **Discord Фикс ${GITHUB_REF_NAME}** - одна кнопка, и Discord открывается.
+
+          Как установить:
+
+          1. Скачай `discord-fix-windows.zip` ниже.
+          2. Распакуй куда удобно.
+          3. Запусти `discord-fix.exe` и нажми большую круглую кнопку.
+
+          Если Windows покажет синее окно SmartScreen - «Подробнее», потом «Выполнить в любом случае».
+          Архив собран этим workflow прямо из кода репозитория.
+
+          Что нового - смотри в CHANGELOG.
+          '@ | Out-File -Encoding utf8 dist/notes.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/discord-fix-windows.zip
+            dist/discord-fix-windows.zip.sha256
+          body_path: dist/notes.md
