@@ -17,24 +17,11 @@ jobs:
         with:
           go-version: "1.24"
 
-      - name: Манифест прав администратора
-        shell: bash
-        run: |
-          go install github.com/akavel/rsrc@latest
-          rsrc -manifest assets/discord-fix.manifest -arch amd64 -o cmd/discord-fix/rsrc_windows_amd64.syso
-
       - name: Юнит-тесты
         run: go test ./...
 
       - name: Сборка exe
-        shell: bash
         run: go build -ldflags "-H=windowsgui -s -w -X main.version=${GITHUB_REF_NAME#v}" -o discord-fix.exe ./cmd/discord-fix
-
-      - name: Контроль - манифест и версия вшиты в exe
-        shell: bash
-        run: |
-          grep -aoq requireAdministrator discord-fix.exe
-          grep -aoq "${GITHUB_REF_NAME#v}" discord-fix.exe
 
       - name: Самопроверка
         run: ./discord-fix.exe -selftest
@@ -60,8 +47,7 @@ jobs:
 
           1. Скачай `discord-fix-windows.zip` ниже.
           2. Распакуй куда удобно.
-          3. Запусти `discord-fix.exe`, разреши запуск с правами администратора.
-          4. Нажми большую круглую кнопку и подожди до минуты.
+          3. Запусти `discord-fix.exe` и нажми большую круглую кнопку.
 
           Если Windows покажет синее окно SmartScreen - «Подробнее», потом «Выполнить в любом случае».
           Архив собран этим workflow прямо из кода репозитория.

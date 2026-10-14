@@ -3,6 +3,7 @@ package core
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"os/exec"
 	"path/filepath"
 	"sync"
@@ -73,11 +74,22 @@ func (r *Runner) Start(exe string, args []string) error {
 	}()
 
 	go func() {
-		_ = cmd.Wait()
+		err := cmd.Wait()
 		r.setRunning(false)
 		if r.Lines != nil {
+			text := exe + " завершился"
+			switch {
+			case err == nil:
+				text = exe + " завершился сам по себе (код 0)"
+			default:
+				if ee, ok := err.(*exec.ExitError); ok {
+					text = fmt.Sprintf("%s завершился с ошибкой, код %d", exe, ee.ExitCode())
+				} else {
+					text = exe + " завершился: " + err.Error()
+				}
+			}
 			select {
-			case r.Lines <- exe + " завершился":
+			case r.Lines <- text:
 			default:
 			}
 		}
