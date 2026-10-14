@@ -15,6 +15,12 @@ jobs:
         with:
           go-version: "1.24"
 
+      - name: Манифест прав администратора
+        shell: bash
+        run: |
+          go install github.com/akavel/rsrc@latest
+          rsrc -manifest assets/discord-fix.manifest -arch amd64 -o cmd/discord-fix/rsrc_windows_amd64.syso
+
       - name: Юнит-тесты
         run: go test ./...
 
@@ -22,9 +28,16 @@ jobs:
         run: go vet ./...
 
       - name: Сборка exe
-        run: go build -ldflags "-H=windowsgui -s -w" -o discord-fix.exe ./cmd/discord-fix
+        shell: bash
+        run: go build -ldflags "-H=windowsgui -s -w -X main.version=dev-${GITHUB_SHA:0:7}" -o discord-fix.exe ./cmd/discord-fix
 
-      - name: Самопроверка (хеши ядер, стратегии)
+      - name: Контроль - манифест и версия вшиты в exe
+        shell: bash
+        run: |
+          grep -aoq requireAdministrator discord-fix.exe
+          grep -aoq "dev-" discord-fix.exe
+
+      - name: Самопроверка
         run: ./discord-fix.exe -selftest
 
       - uses: actions/upload-artifact@v4

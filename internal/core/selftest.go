@@ -79,7 +79,15 @@ func Selftest(root string) (ok bool, report string) {
 		}
 	}
 
-	// 3. стратегии собираются в аргументы
+	// 3. payload-файлы стратегий на месте
+	if bins, err := filepath.Glob(filepath.Join(root, "cores", "zapret", "*.bin")); err != nil || len(bins) < 15 {
+		say("[ПЛОХО] payload-файлов мало: %d", len(bins))
+		ok = false
+	} else {
+		say("[ок] payload-файлов для стратегий: %d", len(bins))
+	}
+
+	// 4. стратегии собираются в аргументы
 	for _, p := range Presets() {
 		exe, args := ArgsFor(&p, "LISTS")
 		if exe == "" || len(args) == 0 {

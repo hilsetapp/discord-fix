@@ -17,7 +17,8 @@ type Runner struct {
 	cancel  context.CancelFunc
 	running bool
 	done    chan struct{} // закрывается, когда процесс завершился
-	Lines   chan string // хвост логов для показа в приложении
+	anyOut  bool          // написал ли процесс хоть строку
+	Lines   chan string   // хвост логов для показа в приложении
 }
 
 // Start поднимает движок. Уже запущенный сначала глушим.
@@ -38,6 +39,7 @@ func (r *Runner) Start(exe string, args []string) error {
 	r.mu.Lock()
 	r.cmd, r.cancel, r.running = cmd, cancel, true
 	r.done = make(chan struct{})
+	r.anyOut = false
 	done := r.done
 	r.mu.Unlock()
 	if r.Lines != nil {
@@ -55,10 +57,15 @@ func (r *Runner) Start(exe string, args []string) error {
 
 	go func() {
 		sc := bufio.NewScanner(stdout)
+		sc.Buffer(make([]byte, 0, 64*1024), 256*1024)
 		for sc.Scan() {
+			line := sc.Text()
+			r.mu.Lock()
+			r.anyOut = true
+			r.mu.Unlock()
 			if r.Lines != nil {
 				select {
-				case r.Lines <- sc.Text():
+				case r.Lines <- line:
 				default: // не блокируемся, если никто не читает
 				}
 			}
@@ -77,6 +84,14 @@ func (r *Runner) Start(exe string, args []string) error {
 		close(done)
 	}()
 	return nil
+}
+
+// AnyOutput - написал ли процесс что-нибудь в stdout/stderr.
+// Полезно для диагностики тихой смерти (антивирус и т.п.).
+func (r *Runner) AnyOutput() bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.anyOut
 }
 
 // Done закрывается после завершения последнего запущенного процесса.
