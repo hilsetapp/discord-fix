@@ -1,8 +1,8 @@
+**English** | [Русский](README.md) | [Español](README.es.md) | [Português](README.pt.md)
+
 # Discord Fix
 
 One click, and Discord works again under a DPI block. Everything else on the network is left untouched: only Discord domains are routed through the bypass.
-
-**Language:** this app is built for the Russian-speaking audience and the Russian blocking environment. The main documentation is in [README.md](README.md) (RU).
 
 ## What it is
 

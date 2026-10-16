@@ -1,3 +1,5 @@
+[English](README.en.md) | **Русский** | [Español](README.es.md) | [Português](README.pt.md)
+
 # Discord Фикс
 
 ![баннер](assets/banner.png)
