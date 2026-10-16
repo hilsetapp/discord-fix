@@ -1,10 +1,10 @@
-[English](README.en.md) | [Русский](README.md) | [Español](README.es.md) | **Português**
+[Русский](README.md) | [English](README.en.md) | [Español](README.es.md) | **Português**
 
 # Discord Fix
 
 Um clique e o Discord volta a funcionar sob bloqueio de DPI. O resto da rede fica intocado: so os dominios do Discord passam pelo desvio.
 
-Este app foi feito para o publico falante de russo e para o ambiente de bloqueios russo. A documentacao completa esta em [README.md](README.md) (russo).
+Este app foi feito para o publico falante de russo e para o ambiente de bloqueios russo. A documentacao completa esta na versao em russo: [README.md](README.md).
 
 ## O que e
 

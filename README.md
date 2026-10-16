@@ -1,4 +1,4 @@
-[English](README.en.md) | **Русский** | [Español](README.es.md) | [Português](README.pt.md)
+**Русский** | [English](README.en.md) | [Español](README.es.md) | [Português](README.pt.md)
 
 # Discord Фикс
 
