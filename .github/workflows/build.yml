@@ -25,7 +25,12 @@ jobs:
         run: go build -ldflags "-H=windowsgui -s -w" -o discord-fix.exe ./cmd/discord-fix
 
       - name: Самопроверка (хеши ядер, стратегии)
-        run: ./discord-fix.exe -selftest
+        shell: pwsh
+        run: |
+          # Start-Process с -Wait: иначе у оконной программы теряется код выхода
+          $p = Start-Process -FilePath .\discord-fix.exe -ArgumentList '-selftest' -NoNewWindow -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Самопроверка провалилась, код $($p.ExitCode)" }
+          if (-not (Test-Path cores/zapret/cygwin1.dll)) { throw "в сборке нет cygwin1.dll - winws не запустится" }
 
       - uses: actions/upload-artifact@v4
         with:

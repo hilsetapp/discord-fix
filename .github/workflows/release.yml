@@ -21,10 +21,17 @@ jobs:
         run: go test ./...
 
       - name: Сборка exe
-        run: go build -ldflags "-H=windowsgui -s -w -X main.version=${GITHUB_REF_NAME#v}" -o discord-fix.exe ./cmd/discord-fix
+        shell: pwsh
+        run: |
+          $v = $env:GITHUB_REF_NAME -replace '^v',''
+          go build -ldflags "-H=windowsgui -s -w -X main.version=$v" -o discord-fix.exe ./cmd/discord-fix
 
       - name: Самопроверка
-        run: ./discord-fix.exe -selftest
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath .\discord-fix.exe -ArgumentList '-selftest' -NoNewWindow -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Самопроверка провалилась, код $($p.ExitCode)" }
+          if (-not (Test-Path cores/zapret/cygwin1.dll)) { throw "в сборке нет cygwin1.dll - winws не запустится" }
 
       - name: Собрать архив для людей
         shell: pwsh
@@ -37,11 +44,23 @@ jobs:
           Compress-Archive -Path stage/discord-fix -DestinationPath dist/discord-fix-windows.zip
           (Get-FileHash dist/discord-fix-windows.zip -Algorithm SHA256).Hash.ToLower() | Out-File -Encoding ascii dist/discord-fix-windows.zip.sha256
 
+      - name: Проверить, что архив полный
+        shell: pwsh
+        run: |
+          Expand-Archive dist/discord-fix-windows.zip -DestinationPath check
+          foreach ($f in 'check/discord-fix/discord-fix.exe',
+                        'check/discord-fix/cores/zapret/winws.exe',
+                        'check/discord-fix/cores/zapret/cygwin1.dll',
+                        'check/discord-fix/lists/discord.txt') {
+            if (-not (Test-Path $f)) { throw "в архиве нет $f" }
+          }
+          Write-Host "архив полный"
+
       - name: Заметки к релизу
         shell: pwsh
         run: |
-          @'
-          **Discord Фикс ${GITHUB_REF_NAME}** - одна кнопка, и Discord открывается.
+          @"
+          **Discord Фикс $($env:GITHUB_REF_NAME)** - одна кнопка, и Discord открывается.
 
           Как установить:
 
@@ -53,7 +72,7 @@ jobs:
           Архив собран этим workflow прямо из кода репозитория.
 
           Что нового - смотри в CHANGELOG.
-          '@ | Out-File -Encoding utf8 dist/notes.md
+          "@ | Out-File -Encoding utf8 dist/notes.md
 
       - uses: softprops/action-gh-release@v2
         with:
